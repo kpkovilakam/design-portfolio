@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Krishnaprakash K — Digital Product Designer</title>
+<meta name="description" content="Portfolio of Krishnaprakash K, digital product designer working across user research, design thinking and AI-assisted design workflows.">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-in">
+    <div class="ident">
+      <span class="ident-name">Krishnaprakash K</span>
+      <span class="mono">Digital Product Designer</span>
+    </div>
+    <nav class="nav">
+      <a href="#work">Work</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <button type="button" class="nav-resume" data-open-resume>Resume</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="intro">
+    <h1>Krishnaprakash K</h1>
+    <p class="intro-title">Digital Product Designer</p>
+    <p class="intro-body">I work across user research, design thinking and AI-assisted design workflows, and I'm comfortable enough with both design and technology to know what can actually be built.</p>
+  </section>
+
+  <section id="work" class="section">
+    <div class="section-label"><span class="mono mono-label">Projects</span></div>
+    <div id="projectRows"></div>
+  </section>
+
+  <section id="about" class="section">
+    <div class="section-label"><span class="mono mono-label">About</span></div>
+    <div class="about-grid">
+      <div class="about-col">
+        <p class="about-lead">Electronics engineer turned product designer.</p>
+        <p class="about-body">I spent my early years in electronics and embedded systems before moving into design, and I finished my M.Des in Product Design at Delhi Technological University. Right now I'm spending most of my curiosity on human-computer interaction and UX for XR, where a lot of the interaction is still being worked out.</p>
+      </div>
+      <div class="about-facts">
+        <div class="fact">
+          <span class="mono">Focus</span>
+          <span class="fact-val">UX research · UX design · UI design · AR / VR · Front-end basics</span>
+        </div>
+        <div class="fact">
+          <span class="mono">Tools</span>
+          <span class="fact-val">Figma · Claude Code · Adobe · Unity · Snap Lens Studio</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="section section-contact">
+    <div class="section-label"><span class="mono mono-label">Contact</span></div>
+    <div class="contact-body">
+      <a class="big-email" href="mailto:krishnakprakash@gmail.com">krishnakprakash@gmail.com</a>
+      <div class="profiles">
+        <a href="https://www.linkedin.com/in/kp-kovilakam/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a href="https://www.behance.net/krishnaprakash1" target="_blank" rel="noopener">Behance ↗</a>
+        <a href="https://github.com/kpkovilakam" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+      <div>
+        <button type="button" class="btn-solid" data-open-resume>Resume</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-in">
+    <div class="footer-ident">
+      <span class="footer-name">Krishnaprakash K</span>
+      <span class="mono">Digital Product Designer</span>
+    </div>
+    <div class="footer-links">
+      <a href="mailto:krishnakprakash@gmail.com">krishnakprakash@gmail.com</a>
+      <a href="https://www.linkedin.com/in/kp-kovilakam/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://www.behance.net/krishnaprakash1" target="_blank" rel="noopener">Behance</a>
+      <a href="https://github.com/kpkovilakam" target="_blank" rel="noopener">GitHub</a>
+      <span class="mono copyright">© 2026</span>
+    </div>
+  </div>
+</footer>
+
+<template id="tpl-row">
+  <div class="row" role="button" tabindex="0">
+    <div class="row-thumb"><img alt="" width="460" height="259"></div>
+    <div class="row-text">
+      <h2 class="row-title"></h2>
+      <p class="row-summary"></p>
+      <p class="mono row-meta"></p>
+      <span class="row-cta">View project →</span>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-project">
+  <div class="ov ov-project" role="dialog" aria-modal="true">
+    <div class="ov-bar">
+      <div class="ov-bar-in">
+        <span class="ov-bar-title"></span>
+        <button type="button" class="btn-outline ov-close">Close ✕</button>
+      </div>
+    </div>
+    <div class="ov-body">
+      <div class="ov-head">
+        <h2 class="ov-title"></h2>
+        <p class="mono ov-meta"></p>
+        <p class="ov-summary"></p>
+      </div>
+      <div class="ov-slides"></div>
+      <div class="ov-foot">
+        <button type="button" class="btn-solid ov-close">Close project</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-resume">
+  <div class="ov ov-resume" role="dialog" aria-modal="true" aria-label="Resume">
+    <div class="resume-bar">
+      <div class="resume-bar-in">
+        <div class="ident">
+          <span class="resume-bar-title">Resume</span>
+          <span class="mono">Krishnaprakash K</span>
+        </div>
+        <div class="resume-actions">
+          <a class="btn-outline" href="resume.pdf" target="_blank" rel="noopener">Open in new tab ↗</a>
+          <a class="btn-solid btn-sm" href="resume.pdf" download="Krishnaprakash-K-Resume.pdf">Download PDF ↓</a>
+          <button type="button" class="btn-outline ov-close">Close ✕</button>
+        </div>
+      </div>
+    </div>
+    <object class="resume-view" data="resume.pdf" type="application/pdf">
+      <div class="resume-fallback">
+        <p>This browser can't display the PDF inline. Open it in a new tab or download a copy.</p>
+        <div class="resume-fallback-actions">
+          <a class="btn-solid" href="resume.pdf" target="_blank" rel="noopener">Open resume ↗</a>
+          <a class="btn-outline btn-lg" href="resume.pdf" download="Krishnaprakash-K-Resume.pdf">Download PDF ↓</a>
+        </div>
+      </div>
+    </object>
+  </div>
+</template>
+
+<script src="script.js"></script>
+</body>
+</html>
