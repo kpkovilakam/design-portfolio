@@ -45,17 +45,37 @@ var PROJECTS = [
 
 var openProject = null;
 var resumeOpen = false;
-var savedScrollY = 0;
 var projectEl = null;
 var resumeEl = null;
+var lockedY = 0;
+var lockDepth = 0;
+
+var IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+  (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
 
 function slidePath(p, n) {
   return 'projects/' + p.slug + '/' + (n < 10 ? '0' + n : n) + '.' + (p.ext || 'png');
 }
 
+/* position:fixed lock — plain overflow:hidden does not hold on iOS Safari. */
 function lockScroll(on) {
-  document.body.style.overflow = on ? 'hidden' : '';
-  document.documentElement.style.overflow = on ? 'hidden' : '';
+  if (on) {
+    lockDepth++;
+    if (lockDepth > 1) return;
+    lockedY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.position = 'fixed';
+    document.body.style.top = (-lockedY) + 'px';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+  } else {
+    lockDepth = Math.max(0, lockDepth - 1);
+    if (lockDepth > 0) return;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, lockedY);
+  }
 }
 
 /* Rows */
@@ -66,8 +86,11 @@ function buildRows() {
   PROJECTS.forEach(function (p, i) {
     var row = tpl.content.firstElementChild.cloneNode(true);
     var img = row.querySelector('.row-thumb img');
-    img.src = slidePath(p, 1);
+    img.src = 'projects/' + p.slug + '/thumb.jpg';
     img.alt = p.title + ' case study cover';
+    img.onerror = (function (proj, node) {
+      return function () { node.onerror = null; node.src = slidePath(proj, 1); };
+    })(p, img);
     row.querySelector('.row-title').textContent = p.title;
     row.querySelector('.row-summary').textContent = p.short;
     row.querySelector('.row-meta').textContent = p.meta;
@@ -88,8 +111,6 @@ function buildRows() {
 function showProject(i) {
   if (openProject !== null) return;
   var p = PROJECTS[i];
-  savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-
   var el = document.getElementById('tpl-project').content.firstElementChild.cloneNode(true);
   el.setAttribute('aria-label', p.title + ' case study');
   el.querySelector('.ov-bar-title').textContent = p.title;
@@ -129,8 +150,7 @@ function hideProject() {
   if (projectEl) projectEl.remove();
   projectEl = null;
   openProject = null;
-  if (!resumeOpen) lockScroll(false);
-  window.scrollTo(0, savedScrollY);
+  lockScroll(false);
 }
 
 /* Resume overlay */
@@ -138,6 +158,22 @@ function hideProject() {
 function showResume() {
   if (resumeOpen) return;
   var el = document.getElementById('tpl-resume').content.firstElementChild.cloneNode(true);
+
+  /* Mobile browsers refuse to render PDFs in <object>/<iframe> — they show a
+     blank pane rather than falling back, so swap in the fallback card up front. */
+  var view = el.querySelector('.resume-view');
+  if (view && (IS_MOBILE || window.innerWidth < 820)) {
+    var fb = view.querySelector('.resume-fallback');
+    var host = document.createElement('div');
+    host.className = 'resume-view resume-view-static';
+    if (fb) {
+      var note = fb.querySelector('p');
+      if (note) note.textContent = 'Mobile browsers open PDFs in their own viewer. Tap below to read or save the resume.';
+      host.appendChild(fb);
+    }
+    view.parentNode.replaceChild(host, view);
+  }
+
   Array.prototype.forEach.call(el.querySelectorAll('.ov-close'), function (btn) {
     btn.addEventListener('click', hideResume);
   });
@@ -154,8 +190,7 @@ function hideResume() {
   if (resumeEl) resumeEl.remove();
   resumeEl = null;
   resumeOpen = false;
-  /* A project overlay may still be open underneath — keep it locked. */
-  if (openProject === null) lockScroll(false);
+  lockScroll(false);
 }
 
 /* Wiring */
