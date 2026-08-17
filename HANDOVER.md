@@ -55,7 +55,9 @@ No data fetching, no persistence, no routing.
 
 **Escape precedence:** resume overlay first (`z-index: 110`), then project overlay (`100`). Closing the resume must not release the scroll lock if a project overlay is still open underneath — `hideResume()` checks this.
 
-**Back / swipe-back:** each overlay pushes a history entry, so the browser back button, the Android back button, the iOS edge-swipe, and the macOS two-finger swipe all close the overlay instead of leaving the site. Close buttons route through `requestClose()` → `history.back()` so the stack never accumulates stale entries. One CSS gotcha: `.ov-project` uses `overscroll-behavior-y: contain`, **not** the both-axes `overscroll-behavior: contain` — containing the x axis silently kills the macOS swipe-back gesture over the overlay.
+**Back / swipe-back:** each overlay pushes a history entry **with a hash** (`#ripple`, `#tinkerweb`, `#playaround`, `#a4alphabets`, `#resume`), so case studies are directly linkable and the back button closes them. Loading the site with one of those hashes opens that overlay straight away. Close buttons route through `requestClose()` → `history.back()` so the stack never accumulates stale entries.
+
+**The horizontal swipe is ours, not the browser's** (`attachSwipeBack()` in `script.js`). Browsers do not fire their own back gesture from inside a fixed, non-root scroll container, which is exactly what the project overlay is — so the trackpad swipe never reached history no matter what the CSS said. The handler reads horizontal `wheel` deltas (trackpad) and single-finger touch drags, slides the overlay right as you go, and closes past ~110px; anything vertical-dominant is ignored so normal scrolling is untouched. Related: `.ov-project` uses `overscroll-behavior-y: contain`, not the both-axes version, so nothing swallows horizontal intent.
 
 ## Design tokens
 
@@ -71,7 +73,7 @@ Mono metadata is 12px and `#666B71` — don't go smaller or lighter, it fails WC
 
 ## Outstanding
 
-**Optional, not built:** name the history entries with a URL hash (`#ripple`, `#tinkerweb`, `#play-around`, `#a4alphabets`, `#resume`) so a case study can be linked or shared directly. Back/swipe already work without it.
+Nothing known. Overlays are linkable by hash and close via back button, Escape, close button, or swipe.
 
 ## Before going live
 

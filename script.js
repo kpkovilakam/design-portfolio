@@ -88,10 +88,14 @@ function lockScroll(on) {
    iOS edge-swipe close the overlay instead of leaving the site. Close buttons go
    through history.back() so the stack never grows stale entries. */
 
+function overlayHash(kind, i) {
+  return kind === 'resume' ? '#resume' : '#' + PROJECTS[i].slug;
+}
+
 function pushOverlayState(kind, i) {
   navDepth++;
   try {
-    history.pushState({ ov: kind, i: i, d: navDepth }, '');
+    history.pushState({ ov: kind, i: i, d: navDepth }, '', overlayHash(kind, i));
   } catch (err) {
     navDepth--;
   }
@@ -99,8 +103,85 @@ function pushOverlayState(kind, i) {
 
 function requestClose() {
   if (navDepth > 0) { history.back(); return; }
+  /* Opened by deep link, so there is nothing to go back to — drop the hash. */
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (err) {}
   hideResume();
   hideProject();
+}
+
+/* Swipe to go back — done in JS on purpose. The overlay is a fixed, non-root
+   scroll container, and browsers will not fire their own back gesture from
+   inside one, so the trackpad swipe never reached history. This reads the
+   horizontal wheel/touch stream directly, drags the overlay, and closes past a
+   threshold. Rightward only; vertical scrolling is left alone. */
+
+function attachSwipeBack(el) {
+  var THRESH = 110, MAX = 96;
+  var acc = 0, last = 0, idle = 0;
+
+  function paint() {
+    el.style.transition = '';
+    el.style.transform = acc > 6 ? 'translateX(' + Math.min(acc * 0.5, MAX) + 'px)' : '';
+  }
+
+  function settle() {
+    acc = 0;
+    el.style.transition = 'transform .18s ease-out';
+    el.style.transform = '';
+  }
+
+  function fire() {
+    acc = 0;
+    clearTimeout(idle);
+    el.style.transition = '';
+    el.style.transform = '';
+    requestClose();
+  }
+
+  el.addEventListener('wheel', function (e) {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) * 1.2) return;
+    var now = Date.now();
+    if (now - last > 220) acc = 0;
+    last = now;
+    clearTimeout(idle);
+    /* deltaX < 0 is a left-to-right (back) swipe. */
+    if (e.deltaX >= 0) { if (acc) settle(); return; }
+    acc += -e.deltaX;
+    if (acc >= THRESH) { fire(); return; }
+    paint();
+    idle = setTimeout(settle, 200);
+  }, { passive: true });
+
+  var sx = 0, sy = 0, dragging = false, decided = false;
+  el.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+    sx = e.touches[0].clientX;
+    sy = e.touches[0].clientY;
+    dragging = true;
+    decided = false;
+    acc = 0;
+  }, { passive: true });
+
+  el.addEventListener('touchmove', function (e) {
+    if (!dragging) return;
+    var dx = e.touches[0].clientX - sx;
+    var dy = e.touches[0].clientY - sy;
+    if (!decided) {
+      if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
+      decided = true;
+      if (Math.abs(dy) > Math.abs(dx)) { dragging = false; return; }
+    }
+    acc = Math.max(0, dx);
+    paint();
+  }, { passive: true });
+
+  function end() {
+    if (!dragging) return;
+    dragging = false;
+    if (acc >= THRESH) fire(); else settle();
+  }
+  el.addEventListener('touchend', end, { passive: true });
+  el.addEventListener('touchcancel', end, { passive: true });
 }
 
 window.addEventListener('popstate', function (e) {
@@ -193,6 +274,7 @@ function showProject(i, fromPop) {
   Array.prototype.forEach.call(el.querySelectorAll('.ov-close'), function (btn) {
     btn.addEventListener('click', requestClose);
   });
+  attachSwipeBack(el);
 
   lockScroll(true);
   document.body.appendChild(el);
@@ -232,6 +314,7 @@ function showResume(fromPop) {
   Array.prototype.forEach.call(el.querySelectorAll('.ov-close'), function (btn) {
     btn.addEventListener('click', requestClose);
   });
+  attachSwipeBack(el);
   lockScroll(true);
   document.body.appendChild(el);
   resumeEl = el;
@@ -251,6 +334,16 @@ function hideResume() {
 /* Wiring */
 
 buildRows();
+
+/* Deep link: /#ripple opens that case study on load. */
+(function () {
+  var h = (location.hash || '').replace('#', '');
+  if (!h) return;
+  if (h === 'resume') { showResume(true); return; }
+  for (var i = 0; i < PROJECTS.length; i++) {
+    if (PROJECTS[i].slug === h) { showProject(i, true); return; }
+  }
+})();
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-open-resume]'), function (btn) {
   btn.addEventListener('click', function () { showResume(); });
