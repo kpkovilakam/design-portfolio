@@ -55,6 +55,8 @@ No data fetching, no persistence, no routing.
 
 **Escape precedence:** resume overlay first (`z-index: 110`), then project overlay (`100`). Closing the resume must not release the scroll lock if a project overlay is still open underneath — `hideResume()` checks this.
 
+**Back / swipe-back:** each overlay pushes a history entry, so the browser back button, the Android back button, the iOS edge-swipe, and the macOS two-finger swipe all close the overlay instead of leaving the site. Close buttons route through `requestClose()` → `history.back()` so the stack never accumulates stale entries. One CSS gotcha: `.ov-project` uses `overscroll-behavior-y: contain`, **not** the both-axes `overscroll-behavior: contain` — containing the x axis silently kills the macOS swipe-back gesture over the overlay.
+
 ## Design tokens
 
 All in `:root` in `styles.css`. Primary blue `#0051FF`, ink `#0A0A0A`, body `#4A4E54`, meta `#666B71`, hairline `#E4E6E9`, surface `#F2F3F5`.
@@ -69,7 +71,7 @@ Mono metadata is 12px and `#666B71` — don't go smaller or lighter, it fails WC
 
 ## Outstanding
 
-**Optional, not built:** give each overlay a URL hash (`#ripple`, `#tinkerweb`, `#play-around`, `#a4alphabets`, `#resume`) so a case study can be linked directly and the browser back button closes it. Worth doing for a portfolio; skipped to keep the first version simple.
+**Optional, not built:** name the history entries with a URL hash (`#ripple`, `#tinkerweb`, `#play-around`, `#a4alphabets`, `#resume`) so a case study can be linked or shared directly. Back/swipe already work without it.
 
 ## Before going live
 

@@ -435,7 +435,9 @@ button { font-family: var(--sans); }
 .ov-project {
   z-index: 100;
   overflow-y: auto;
-  overscroll-behavior: contain;
+  /* y only. Full `overscroll-behavior: contain` also contains the x axis, which
+     cancels the macOS two-finger swipe-back gesture over this overlay. */
+  overscroll-behavior-y: contain;
 }
 
 .ov-bar {
