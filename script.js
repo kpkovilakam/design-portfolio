@@ -49,6 +49,7 @@ var projectEl = null;
 var resumeEl = null;
 var lockedY = 0;
 var lockDepth = 0;
+var navDepth = 0;
 
 var IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
   (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
@@ -77,6 +78,44 @@ function lockScroll(on) {
     window.scrollTo(0, lockedY);
   }
 }
+
+/* History — each overlay is a history entry, so the Android back button and the
+   iOS edge-swipe close the overlay instead of leaving the site. Close buttons go
+   through history.back() so the stack never grows stale entries. */
+
+function pushOverlayState(kind, i) {
+  navDepth++;
+  try {
+    history.pushState({ ov: kind, i: i, d: navDepth }, '');
+  } catch (err) {
+    navDepth--;
+  }
+}
+
+function requestClose() {
+  if (navDepth > 0) { history.back(); return; }
+  hideResume();
+  hideProject();
+}
+
+window.addEventListener('popstate', function (e) {
+  var s = e.state;
+  navDepth = (s && s.d) ? s.d : 0;
+  if (!s || !s.ov) {
+    hideResume();
+    hideProject();
+    return;
+  }
+  if (s.ov === 'resume') {
+    if (!resumeOpen) showResume(true);
+    return;
+  }
+  hideResume();
+  if (openProject !== s.i) {
+    hideProject();
+    showProject(s.i, true);
+  }
+});
 
 /* Rows */
 
@@ -108,8 +147,9 @@ function buildRows() {
 
 /* Project overlay */
 
-function showProject(i) {
+function showProject(i, fromPop) {
   if (openProject !== null) return;
+  if (!fromPop) pushOverlayState('project', i);
   var p = PROJECTS[i];
   var el = document.getElementById('tpl-project').content.firstElementChild.cloneNode(true);
   el.setAttribute('aria-label', p.title + ' case study');
@@ -133,7 +173,7 @@ function showProject(i) {
   }
 
   Array.prototype.forEach.call(el.querySelectorAll('.ov-close'), function (btn) {
-    btn.addEventListener('click', hideProject);
+    btn.addEventListener('click', requestClose);
   });
 
   lockScroll(true);
@@ -155,8 +195,9 @@ function hideProject() {
 
 /* Resume overlay */
 
-function showResume() {
+function showResume(fromPop) {
   if (resumeOpen) return;
+  if (!fromPop) pushOverlayState('resume');
   var el = document.getElementById('tpl-resume').content.firstElementChild.cloneNode(true);
 
   /* Mobile browsers refuse to render PDFs in <object>/<iframe> — they show a
@@ -166,16 +207,12 @@ function showResume() {
     var fb = view.querySelector('.resume-fallback');
     var host = document.createElement('div');
     host.className = 'resume-view resume-view-static';
-    if (fb) {
-      var note = fb.querySelector('p');
-      if (note) note.textContent = 'Mobile browsers open PDFs in their own viewer. Tap below to read or save the resume.';
-      host.appendChild(fb);
-    }
+    if (fb) host.appendChild(fb);
     view.parentNode.replaceChild(host, view);
   }
 
   Array.prototype.forEach.call(el.querySelectorAll('.ov-close'), function (btn) {
-    btn.addEventListener('click', hideResume);
+    btn.addEventListener('click', requestClose);
   });
   lockScroll(true);
   document.body.appendChild(el);
@@ -203,6 +240,5 @@ Array.prototype.forEach.call(document.querySelectorAll('[data-open-resume]'), fu
 
 document.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape') return;
-  if (resumeOpen) { hideResume(); return; }
-  if (openProject !== null) hideProject();
+  if (resumeOpen || openProject !== null) requestClose();
 });
