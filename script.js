@@ -7,9 +7,14 @@ var PROJECTS = [
     title: 'Ripple',
     meta: 'Android fundraising app · 2026',
     short: 'Android-based online fundraising experience designed to help donors stay connected, see their impact, and naturally share causes with others.',
-    long: 'An online fundraising app where donors lost interest after giving and rarely shared the causes they supported. Across three sprints as UX Design Intern at Experion Technologies, I worked on an in-house notification ecosystem, a personalised donor experience built on survey and interview research, and a sharing flow timed to the moment after donating.',
+    long: 'An online fundraising app that keeps donors close to the causes they fund. As a UX Design Intern at Experion Technologies, I spent three sprints on an in-house notification system, a personalised donor experience shaped by surveys and interviews, and campaign sharing that grows the community organically.',
     slides: 28,
-    ratio: '3840 / 2160'
+    ext: 'webp',
+    ratio: '3840 / 2160',
+    link: {
+      label: 'Open Figma file ↗',
+      href: 'https://www.figma.com/design/QS2mavyiJ4iXSLzx1t19io/Ripple-Screens---Krishnaprakash-K--Team-B--Kochi-?node-id=340-6478&t=fCBLkE7kHQW1s0Gl-1'
+    }
   },
   {
     slug: 'tinkerweb',
@@ -18,7 +23,7 @@ var PROJECTS = [
     short: 'Interactive learning platform designed to teach the basics of web design to teenagers through gamified challenges and feedback-driven tutorials.',
     long: 'An interactive platform that teaches the basics of web design to Class 11 and 12 students, built at DIVINE Lab, IIT Delhi for the Digital Marketing, Digital Design and Development course in Punjab government schools. Online lessons lose beginners to text-heavy, passive content, so the learning is delivered through short modules, hands-on activities and gamified progress. Grounded in 40+ survey responses, 10+ interviews and usability testing with students.',
     slides: 53,
-    ext: 'jpg',
+    ext: 'webp',
     ratio: '2800 / 2160'
   },
   {
@@ -26,9 +31,9 @@ var PROJECTS = [
     title: 'Play Around',
     meta: 'Mixed Reality experience · 2024',
     short: 'Simple and intuitive mixed reality sandbox experience for users new to Meta Quest 3.',
-    long: 'A mixed-reality sandbox game for the Meta Quest, played with hand interactions instead of controllers. First-time XR users struggle with complex controls and cyber sickness, and most good MR content sits behind a paywall, so this is a free, low-barrier experience built around simple picking and throwing. Designed in Bezi, built in Unity with the Meta Interaction SDK, and refined through user testing at Delhi Technological University.',
+    long: 'A mixed-reality sandbox game for the Meta Quest, played with hand interactions instead of controllers. First-time XR users struggle with complex controls and cyber sickness, and most good MR content sits behind a paywall. So this is a free experience built around simple picking and throwing. Designed in Bezi, built in Unity with the Meta Interaction SDK.',
     slides: 22,
-    ext: 'jpg',
+    ext: 'webp',
     ratio: '16 / 9'
   },
   {
@@ -36,9 +41,9 @@ var PROJECTS = [
     title: 'A4Alphabets',
     meta: 'Augmented Reality experience · 2023',
     short: 'AR based English alphabets learning experience for kindergarten students.',
-    long: 'An augmented-reality learning aid for kindergarten and primary school children. Traditional alphabet teaching struggles to hold young attention, so each printed card triggers a 3D model and audio for its letter — pairing what children see with what they hear. Built in Meta Spark Studio with 3D assets from Sketchfab, published as a shareable AR effect.',
+    long: 'An augmented-reality learning aid for kindergarten and primary school children. Traditional alphabet teaching struggles to hold young attention, so each printed card triggers a 3D model and audio for its letter, pairing what children see with what they hear. Built in Meta Spark Studio and published as a shareable AR effect.',
     slides: 20,
-    ext: 'jpg',
+    ext: 'webp',
     ratio: '16 / 9'
   }
 ];
@@ -55,7 +60,7 @@ var IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
   (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
 
 function slidePath(p, n) {
-  return 'projects/' + p.slug + '/' + (n < 10 ? '0' + n : n) + '.' + (p.ext || 'png');
+  return 'projects/' + p.slug + '/' + (n < 10 ? '0' + n : n) + '.' + (p.ext || 'webp');
 }
 
 /* position:fixed lock — plain overflow:hidden does not hold on iOS Safari. */
@@ -125,7 +130,7 @@ function buildRows() {
   PROJECTS.forEach(function (p, i) {
     var row = tpl.content.firstElementChild.cloneNode(true);
     var img = row.querySelector('.row-thumb img');
-    img.src = 'projects/' + p.slug + '/thumb.jpg';
+    img.src = 'projects/' + p.slug + '/thumb.webp';
     img.alt = p.title + ' case study cover';
     img.onerror = (function (proj, node) {
       return function () { node.onerror = null; node.src = slidePath(proj, 1); };
@@ -157,6 +162,19 @@ function showProject(i, fromPop) {
   el.querySelector('.ov-title').textContent = p.title;
   el.querySelector('.ov-meta').textContent = p.meta;
   el.querySelector('.ov-summary').textContent = p.long;
+
+  var links = el.querySelector('.ov-links');
+  if (p.link) {
+    var a = document.createElement('a');
+    a.className = 'btn-outline btn-lg';
+    a.href = p.link.href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = p.link.label;
+    links.appendChild(a);
+  } else {
+    links.remove();
+  }
 
   var slides = el.querySelector('.ov-slides');
   for (var n = 1; n <= p.slides; n++) {
