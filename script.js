@@ -235,7 +235,7 @@ function hideResume() {
 buildRows();
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-open-resume]'), function (btn) {
-  btn.addEventListener('click', showResume);
+  btn.addEventListener('click', function () { showResume(); });
 });
 
 document.addEventListener('keydown', function (e) {

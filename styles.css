@@ -618,6 +618,7 @@ button { font-family: var(--sans); }
     gap: 4px 18px;
   }
   .ident .mono { display: none; }
+  .site-header .ident { display: none; }
   .nav {
     width: 100%;
     gap: 8px;
