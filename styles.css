@@ -93,6 +93,19 @@ button { font-family: var(--sans); }
   color: var(--ink);
 }
 
+/* Name acts as "home": closes any overlay and returns to the top. */
+a.ident-home {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.ident-home:hover .ident-name,
+a.ident-home:focus-visible .ident-name,
+a.mono.ident-home:hover,
+a.mono.ident-home:focus-visible {
+  color: var(--blue);
+}
+
 .nav {
   display: flex;
   align-items: baseline;

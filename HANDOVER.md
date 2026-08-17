@@ -53,6 +53,8 @@ No data fetching, no persistence, no routing.
 
 **Per-project aspect ratios are deliberate.** The decks are not all 16:9 — Ripple is `3840/2160`, TinkerWeb `2800/2160`, the other two `16/9`. The ratio is set as a CSS variable on each slide wrapper so space is reserved before the image loads; without it the page height jumps while scrolling.
 
+**The name is the home link.** Any element with `data-home` (the header ident, the name in the resume bar) closes whatever is open, clears the hash, releases the scroll lock and returns to the top of the page. `href="./"` is the no-JS fallback.
+
 **Escape precedence:** resume overlay first (`z-index: 110`), then project overlay (`100`). Closing the resume must not release the scroll lock if a project overlay is still open underneath — `hideResume()` checks this.
 
 **Back / swipe-back:** each overlay pushes a history entry **with a hash** (`#ripple`, `#tinkerweb`, `#playaround`, `#a4alphabets`, `#resume`), so case studies are directly linkable and the back button closes them. Loading the site with one of those hashes opens that overlay straight away. Close buttons route through `requestClose()` → `history.back()` so the stack never accumulates stale entries.

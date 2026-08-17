@@ -84,9 +84,12 @@ function lockScroll(on) {
   }
 }
 
-/* History — each overlay is a history entry, so the Android back button and the
-   iOS edge-swipe close the overlay instead of leaving the site. Close buttons go
-   through history.back() so the stack never grows stale entries. */
+/* History — each overlay is a history entry with a hash, so case studies are
+   linkable and the back button closes them. Closing is done DIRECTLY, never by
+   delegating to history.back(): the entry behind the current one is not
+   guaranteed to be a non-overlay entry, so a back() could land on a duplicate
+   overlay state and leave the overlay open. We close, then replace the current
+   entry so the URL matches whatever is still open. */
 
 function overlayHash(kind, i) {
   return kind === 'resume' ? '#resume' : '#' + PROJECTS[i].slug;
@@ -101,12 +104,27 @@ function pushOverlayState(kind, i) {
   }
 }
 
+/* Point the current history entry at whatever overlay is still open. */
+function syncUrl() {
+  var state = null, hash = '';
+  if (resumeOpen) {
+    state = { ov: 'resume', i: null, d: navDepth };
+    hash = '#resume';
+  } else if (openProject !== null) {
+    state = { ov: 'project', i: openProject, d: navDepth };
+    hash = overlayHash('project', openProject);
+  }
+  try {
+    history.replaceState(state, '', location.pathname + location.search + hash);
+  } catch (err) {}
+}
+
 function requestClose() {
-  if (navDepth > 0) { history.back(); return; }
-  /* Opened by deep link, so there is nothing to go back to — drop the hash. */
-  try { history.replaceState(null, '', location.pathname + location.search); } catch (err) {}
-  hideResume();
-  hideProject();
+  if (resumeOpen) hideResume();
+  else if (openProject !== null) hideProject();
+  else return;
+  navDepth = Math.max(0, navDepth - 1);
+  syncUrl();
 }
 
 /* Swipe to go back — done in JS on purpose. The overlay is a fixed, non-root
@@ -347,6 +365,28 @@ buildRows();
 
 Array.prototype.forEach.call(document.querySelectorAll('[data-open-resume]'), function (btn) {
   btn.addEventListener('click', function () { showResume(); });
+});
+
+/* Name in the top bar = home: close whatever is open and return to the top.
+   Delegated, because the resume bar's copy is cloned from a <template> after
+   load. The href="./" is the no-JS fallback. */
+document.addEventListener('click', function (e) {
+  var t = e.target;
+  var home = t && t.closest ? t.closest('[data-home]') : null;
+  if (!home) return;
+  e.preventDefault();
+  var wasOpen = resumeOpen || openProject !== null;
+  lockedY = 0;
+  hideResume();
+  hideProject();
+  lockDepth = 0;
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  document.body.style.overflow = '';
+  navDepth = 0;
+  syncUrl();
+  window.scrollTo({ top: 0, behavior: wasOpen ? 'auto' : 'smooth' });
 });
 
 document.addEventListener('keydown', function (e) {
